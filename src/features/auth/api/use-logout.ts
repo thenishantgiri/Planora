@@ -3,6 +3,7 @@ import { InferResponseType } from "hono";
 import { useRouter } from "next/navigation";
 
 import { client } from "@/lib/rpc";
+import { toast } from "sonner";
 
 type ResponseType = InferResponseType<(typeof client.api.auth.logout)["$post"]>;
 
@@ -15,11 +16,20 @@ export const useLogout = () => {
       const response = await client.api.auth.logout["$post"]();
       const result = await response.json();
 
+      if (!response.ok) {
+        throw new Error("Failed to log out");
+      }
+
       return result;
     },
     onSuccess: () => {
+      toast.success("Logged out successfully");
       router.refresh();
       queryClient.invalidateQueries({ queryKey: ["current"] });
+    },
+    onError: (error) => {
+      toast.error("Failed to log out");
+      console.error(error);
     },
   });
 
