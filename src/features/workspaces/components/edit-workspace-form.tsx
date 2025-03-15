@@ -149,7 +149,7 @@ export const EditWorkspaceForm = ({
             <ArrowLeftIcon className="size-4 mr-2" />
             Back
           </Button>
-          <CardTitle className="text-xl  font-bold">
+          <CardTitle className="text-xl font-bold">
             {initialValues.name}
           </CardTitle>
         </CardHeader>
