@@ -1,46 +1,39 @@
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { InferRequestType, InferResponseType } from "hono";
 import { useRouter } from "next/navigation";
+import { client, handleApiResponse } from "@/lib/rpc";
+import { DeleteProjectResponse, ProjectIdParam } from "../types";
 
-import { client } from "@/lib/rpc";
-
-type ResponseType = InferResponseType<
-  (typeof client.api.projects)[":projectId"]["$delete"],
-  200
->;
-type RequestType = InferRequestType<
-  (typeof client.api.projects)[":projectId"]["$delete"]
->;
+type DeleteProjectParams = {
+  param: ProjectIdParam;
+};
 
 export const useDeleteProject = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<ResponseType, Error, RequestType>({
+  return useMutation<DeleteProjectResponse, Error, DeleteProjectParams>({
     mutationFn: async ({ param }) => {
-      const response = await client.api.projects[":projectId"]["$delete"]({
+      const response = await client.api.projects[":projectId"].$delete({
         param,
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete project");
-      }
-
-      return await response.json();
+      return handleApiResponse<DeleteProjectResponse>(response);
     },
-    onSuccess: ({ data }) => {
+    onSuccess: (result) => {
       toast.success("Project deleted successfully");
-
       router.refresh();
+
+      // Use optional chaining and nullish coalescing for type safety
+      const projectId = result?.data?.$id;
       queryClient.invalidateQueries({ queryKey: ["projects"] });
-      queryClient.invalidateQueries({ queryKey: ["project", data.$id] });
+
+      if (projectId) {
+        queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+      }
     },
     onError: (error) => {
-      toast.error("Failed to delete project");
-      console.error(error);
+      toast.error(`Failed to delete project: ${error.message}`);
+      console.error("Error deleting project:", error);
     },
   });
-
-  return mutation;
 };
