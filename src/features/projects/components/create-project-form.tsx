@@ -59,7 +59,7 @@ export const CreateProjectForm = ({ onCancel }: CreateProjectFormProps) => {
       {
         onSuccess: ({ data }) => {
           form.reset();
-          router.push(`/workspaces/${workspaceId}/projects/${data.$id}`);
+          router.push(`/workspaces/${workspaceId}/projects/${data?.$id}`);
         },
       }
     );
@@ -77,7 +77,7 @@ export const CreateProjectForm = ({ onCancel }: CreateProjectFormProps) => {
     <Card className="w-full h-full border-none shadow-none">
       <CardHeader className="flex p-7">
         <CardTitle className="text-xl  font-bold">
-          Create a new Project
+          Create a new project
         </CardTitle>
       </CardHeader>
       <div className="px-7">
