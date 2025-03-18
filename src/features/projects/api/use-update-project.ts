@@ -1,6 +1,5 @@
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { client, handleApiResponse } from "@/lib/rpc";
 import {
   ProjectIdParam,
@@ -14,7 +13,6 @@ type UpdateProjectParams = {
 };
 
 export const useUpdateProject = () => {
-  const router = useRouter();
   const queryClient = useQueryClient();
 
   return useMutation<UpdateProjectResponse, Error, UpdateProjectParams>({
@@ -25,17 +23,13 @@ export const useUpdateProject = () => {
       });
       return handleApiResponse<UpdateProjectResponse>(response);
     },
-    onSuccess: (result) => {
+    onSuccess: ({ data }) => {
       toast.success("Project updated successfully");
-      router.refresh();
 
-      // Use optional chaining and nullish coalescing for type safety
-      const projectId = result?.data?.$id;
       queryClient.invalidateQueries({ queryKey: ["projects"] });
-
-      if (projectId) {
-        queryClient.invalidateQueries({ queryKey: ["project", projectId] });
-      }
+      queryClient.invalidateQueries({
+        queryKey: ["project", data?.$id],
+      });
     },
     onError: (error) => {
       toast.error(`Failed to update project: ${error.message}`);

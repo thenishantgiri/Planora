@@ -52,6 +52,11 @@ export const CreateTaskForm = ({
     resolver: zodResolver(createTaskSchema),
     defaultValues: {
       workspaceId,
+      name: "", // Initialize with empty string instead of undefined
+      status: undefined,
+      assigneeId: undefined,
+      projectId: undefined,
+      dueDate: undefined,
     },
     context: { skipValidation: ["workspaceId"] },
   });
@@ -73,7 +78,7 @@ export const CreateTaskForm = ({
   return (
     <Card className="w-full h-full border-none shadow-none">
       <CardHeader className="flex p-7">
-        <CardTitle className="text-xl  font-bold">Create a new task</CardTitle>
+        <CardTitle className="text-xl font-bold">Create a new task</CardTitle>
       </CardHeader>
       <div className="px-7">
         <DottedSeparator />
@@ -90,7 +95,11 @@ export const CreateTaskForm = ({
                   <FormItem>
                     <FormLabel>Task Name</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Enter task name" />
+                      <Input
+                        {...field}
+                        placeholder="Enter task name"
+                        value={field.value || ""} // Ensure value is never undefined
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -104,7 +113,11 @@ export const CreateTaskForm = ({
                   <FormItem>
                     <FormLabel>Due Date</FormLabel>
                     <FormControl>
-                      <DatePicker {...field} />
+                      <DatePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Select due date"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -118,7 +131,7 @@ export const CreateTaskForm = ({
                   <FormItem>
                     <FormLabel>Assignee</FormLabel>
                     <Select
-                      defaultValue={field.value}
+                      value={field.value || ""}
                       onValueChange={field.onChange}
                     >
                       <FormControl>
@@ -152,7 +165,7 @@ export const CreateTaskForm = ({
                   <FormItem>
                     <FormLabel>Status</FormLabel>
                     <Select
-                      defaultValue={field.value}
+                      value={field.value || ""}
                       onValueChange={field.onChange}
                     >
                       <FormControl>
@@ -186,7 +199,7 @@ export const CreateTaskForm = ({
                   <FormItem>
                     <FormLabel>Project</FormLabel>
                     <Select
-                      defaultValue={field.value}
+                      value={field.value || ""}
                       onValueChange={field.onChange}
                     >
                       <FormControl>

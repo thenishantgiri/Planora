@@ -27,10 +27,26 @@ export const useDeleteWorkspace = () => {
 
       return await response.json();
     },
+    onMutate: async ({ param }) => {
+      // Cancel any outgoing refetches for this workspace
+      await queryClient.cancelQueries({
+        queryKey: ["workspace", param.workspaceId],
+      });
+
+      // Remove the workspace from the cache immediately to prevent further queries
+      queryClient.removeQueries({ queryKey: ["workspace", param.workspaceId] });
+    },
     onSuccess: ({ data }) => {
       toast.success("Workspace deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-      queryClient.invalidateQueries({ queryKey: ["workspace", data.$id] });
+
+      // Remove the workspace from the cache completely (don't just invalidate)
+      queryClient.removeQueries({ queryKey: ["workspace", data.$id] });
+
+      // Invalidate the workspaces list but don't trigger an immediate refetch
+      queryClient.invalidateQueries({
+        queryKey: ["workspaces"],
+        refetchType: "none",
+      });
     },
     onError: (error) => {
       toast.error("Failed to delete workspace");

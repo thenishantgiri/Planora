@@ -132,6 +132,42 @@ const app = new Hono<{
     }
   )
 
+  // GET /:projectId - Get a project
+  .get("/:projectId", sessionMiddleware, async (c) => {
+    const { projectId } = c.req.param();
+    const databases = c.get("databases");
+    const user = c.get("user");
+
+    try {
+      // Get the project
+      const project = await databases.getDocument(
+        DATABASE_ID,
+        PROJECTS_ID,
+        projectId
+      );
+
+      // Check if the user is a member of the workspace
+      const member = await getMember({
+        databases,
+        workspaceId: project.workspaceId,
+        userId: user.$id,
+      });
+
+      if (!member) {
+        return c.json({
+          error: "Unauthorized. You don't have access to this project.",
+          status: 401,
+        });
+      }
+
+      // Return the project with standard response format
+      return c.json({ data: project });
+    } catch (error) {
+      console.error(`Error fetching project ${projectId}:`, error);
+      return c.json({ error: "Project not found", status: 404 });
+    }
+  })
+
   // PATCH /:projectId - Update a project
   .patch(
     "/:projectId",

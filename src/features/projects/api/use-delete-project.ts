@@ -1,6 +1,5 @@
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { client, handleApiResponse } from "@/lib/rpc";
 import { DeleteProjectResponse, ProjectIdParam } from "../types";
 
@@ -9,7 +8,6 @@ type DeleteProjectParams = {
 };
 
 export const useDeleteProject = () => {
-  const router = useRouter();
   const queryClient = useQueryClient();
 
   return useMutation<DeleteProjectResponse, Error, DeleteProjectParams>({
@@ -19,17 +17,26 @@ export const useDeleteProject = () => {
       });
       return handleApiResponse<DeleteProjectResponse>(response);
     },
-    onSuccess: (result) => {
+    onMutate: async ({ param }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({
+        queryKey: ["project", param.projectId],
+      });
+
+      // Remove the project from the cache immediately to prevent further queries
+      queryClient.removeQueries({ queryKey: ["project", param.projectId] });
+    },
+    onSuccess: ({ data }) => {
       toast.success("Project deleted successfully");
-      router.refresh();
 
-      // Use optional chaining and nullish coalescing for type safety
-      const projectId = result?.data?.$id;
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      // Invalidate projects list (but don't refetch right away)
+      queryClient.invalidateQueries({
+        queryKey: ["projects"],
+        refetchType: "none",
+      });
 
-      if (projectId) {
-        queryClient.invalidateQueries({ queryKey: ["project", projectId] });
-      }
+      // Remove the deleted project from the cache permanently
+      queryClient.removeQueries({ queryKey: ["project", data?.$id] });
     },
     onError: (error) => {
       toast.error(`Failed to delete project: ${error.message}`);
