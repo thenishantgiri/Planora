@@ -117,6 +117,7 @@ export const MembersList = () => {
                     >
                       Set as Member
                     </DropdownMenuItem>
+                    <DottedSeparator />
                     <DropdownMenuItem
                       className="font-medium text-amber-700"
                       onClick={() => {
