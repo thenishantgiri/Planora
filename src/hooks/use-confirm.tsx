@@ -40,7 +40,12 @@ export const useConfirm = (
   };
 
   const ConfirmationDialog = () => (
-    <ResponsiveModal open={promise !== null} onOpenChange={handleClose}>
+    <ResponsiveModal
+      open={promise !== null}
+      onOpenChange={handleClose}
+      title="Confirmation Dialog"
+      description="Dialog to confirm an action"
+    >
       <Card className="w-full h-full border-none shadow-none">
         <CardContent className="pt-8">
           <CardHeader className="p-0">

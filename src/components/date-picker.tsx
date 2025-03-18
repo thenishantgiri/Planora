@@ -14,42 +14,43 @@ import {
 } from "@/components/ui/popover";
 
 interface DatePickerProps {
-  value: Date | undefined;
-  onChange: (date: Date) => void;
+  value?: Date;
+  onChange: (date: Date | undefined) => void;
   className?: string;
   placeholder?: string;
 }
 
-export const DatePicker = ({
-  value,
-  onChange,
-  className,
-  placeholder = "Select a date",
-}: DatePickerProps) => {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant={"outline"}
-          size={"lg"}
-          className={cn(
-            "w-full justify-start text-left font-normal px-3",
-            !value && "text-muted-foreground",
-            className
-          )}
-        >
-          <CalenderIcon className="mr-2 h-4 w-4" />
-          {value ? format(value, "PPP") : <span>{placeholder}</span>}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
-        <Calendar
-          mode="single"
-          selected={value}
-          onSelect={(date) => onChange(date as Date)}
-          initialFocus
-        />
-      </PopoverContent>
-    </Popover>
-  );
-};
+export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
+  ({ value, onChange, className, placeholder = "Select a date" }, ref) => {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            ref={ref}
+            variant={"outline"}
+            size={"lg"}
+            className={cn(
+              "w-full justify-start text-left font-normal px-3",
+              !value && "text-muted-foreground",
+              className
+            )}
+          >
+            <CalenderIcon className="mr-2 h-4 w-4" />
+            {value ? format(value, "PPP") : <span>{placeholder}</span>}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0">
+          <Calendar
+            mode="single"
+            selected={value}
+            onSelect={(date) => onChange(date as Date)}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+    );
+  }
+);
+
+// Add a display name to the component for better debugging
+DatePicker.displayName = "DatePicker";

@@ -76,17 +76,25 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
           </div>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All statuses</SelectItem>
+          <SelectItem className="cursor-pointer" value="all">
+            All statuses
+          </SelectItem>
           <SelectSeparator />
-          <SelectItem value={TaskStatus.BACKLOG}>Backlog</SelectItem>
-          <SelectSeparator />
-          <SelectItem value={TaskStatus.TODO}>Todo</SelectItem>
-          <SelectSeparator />
-          <SelectItem value={TaskStatus.IN_PROGRESS}>In Progress</SelectItem>
-          <SelectSeparator />
-          <SelectItem value={TaskStatus.IN_REVIEW}>In Review</SelectItem>
-          <SelectSeparator />
-          <SelectItem value={TaskStatus.DONE}>Done</SelectItem>
+          <SelectItem className="cursor-pointer" value={TaskStatus.BACKLOG}>
+            Backlog
+          </SelectItem>
+          <SelectItem className="cursor-pointer" value={TaskStatus.TODO}>
+            Todo
+          </SelectItem>
+          <SelectItem className="cursor-pointer" value={TaskStatus.IN_PROGRESS}>
+            In Progress
+          </SelectItem>
+          <SelectItem className="cursor-pointer" value={TaskStatus.IN_REVIEW}>
+            In Review
+          </SelectItem>
+          <SelectItem className="cursor-pointer" value={TaskStatus.DONE}>
+            Done
+          </SelectItem>
         </SelectContent>
       </Select>
 
@@ -102,10 +110,16 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
           </div>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All assignees</SelectItem>
+          <SelectItem className="cursor-pointer" value="all">
+            All assignees
+          </SelectItem>
           <SelectSeparator />
           {memberOptions?.map((member) => (
-            <SelectItem key={member.value} value={member.value}>
+            <SelectItem
+              className="cursor-pointer"
+              key={member.value}
+              value={member.value}
+            >
               {member.label}
             </SelectItem>
           ))}
@@ -113,26 +127,34 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
       </Select>
 
       {/* Project Filter */}
-      <Select
-        defaultValue={projectId ?? undefined}
-        onValueChange={(value) => onProjectChange(value)}
-      >
-        <SelectTrigger className="w-full lg:w-auto h-8">
-          <div className="flex items-center pr-2">
-            <FolderIcon className="size-4 mr-2" />
-            <SelectValue placeholder="All projects" />
-          </div>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All projects</SelectItem>
-          <SelectSeparator />
-          {projectOptions?.map((project) => (
-            <SelectItem key={project.value} value={project.value}>
-              {project.label}
+      {!hideProjectFilter && (
+        <Select
+          defaultValue={projectId ?? undefined}
+          onValueChange={(value) => onProjectChange(value)}
+        >
+          <SelectTrigger className="w-full lg:w-auto h-8">
+            <div className="flex items-center pr-2">
+              <FolderIcon className="size-4 mr-2" />
+              <SelectValue placeholder="All projects" />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem className="cursor-pointer" value="all">
+              All projects
             </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+            <SelectSeparator />
+            {projectOptions?.map((project) => (
+              <SelectItem
+                className="cursor-pointer"
+                key={project.value}
+                value={project.value}
+              >
+                {project.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       {/* Due Date Filter */}
       <DatePicker

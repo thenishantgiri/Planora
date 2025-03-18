@@ -20,8 +20,6 @@ export const useGetTask = ({ taskId }: UseGetTaskProps) => {
 
       const { data } = await response.json();
 
-      console.log("single task details: ", data);
-
       return data;
     },
   });

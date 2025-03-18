@@ -109,7 +109,7 @@ export const EditProjectForm = ({
                 ? onCancel
                 : () =>
                     router.push(
-                      `/workspaces/${initialValues.workspaceId}/projects/${initialValues.$id}`
+                      `/workspaces/${initialValues.workspaceId}/projects/${initialValues.$id}?projectId=${initialValues.$id}`
                     )
             }
             disabled={isPending || isDeletingProject}
