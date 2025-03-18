@@ -16,7 +16,7 @@ export const MemberAvatar = ({
   // TODO: Add support for image (refer to the MembersAvatar component)
 
   return (
-    <Avatar className={cn("size-10 rounded-md", className)}>
+    <Avatar className={cn("size-5 rounded-md", className)}>
       <AvatarFallback
         className={cn(
           "bg-neutral-200 font-medium text-neutral-500 flex items-center justify-center",
