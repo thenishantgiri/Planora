@@ -28,7 +28,6 @@ export const useDeleteTask = () => {
     onSuccess: ({ data }) => {
       toast.success("Task deleted successfully");
 
-      // router.refresh();
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       queryClient.invalidateQueries({ queryKey: ["tasks", data.$id] });
     },

@@ -1,11 +1,16 @@
 import { z } from "zod";
-import { getMember } from "@/features/members/utils";
-import { sessionMiddleware } from "@/lib/session-middleware";
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { ID, Query } from "node-appwrite";
-import { DATABASE_ID, IMAGES_BUCKET_ID, PROJECTS_ID } from "@/config";
+import { zValidator } from "@hono/zod-validator";
+import { endOfMonth, startOfMonth, subMonths } from "date-fns";
+
+import { getMember } from "@/features/members/utils";
+
+import { sessionMiddleware } from "@/lib/session-middleware";
+import { DATABASE_ID, IMAGES_BUCKET_ID, PROJECTS_ID, TASKS_ID } from "@/config";
+
 import { createProjectSchema, updateProjectSchema } from "../schemas";
+
 import {
   Project,
   CreateProjectResponse,
@@ -14,6 +19,7 @@ import {
   DeleteProjectResponse,
 } from "../types";
 import { AppVariables } from "@/types/context";
+import { TaskStatus } from "@/features/tasks/types";
 
 // Constants for error messages
 const ERRORS = {
@@ -154,10 +160,7 @@ const app = new Hono<{
       });
 
       if (!member) {
-        return c.json({
-          error: "Unauthorized. You don't have access to this project.",
-          status: 401,
-        });
+        return c.json({ error: ERRORS.UNAUTHORIZED, status: 401 });
       }
 
       // Return the project with standard response format
@@ -310,6 +313,197 @@ const app = new Hono<{
         },
         500
       );
+    }
+  })
+
+  // GET /:projectId/analytics - Get analytics for a project
+  .get("/:projectId/analytics", sessionMiddleware, async (c) => {
+    const { projectId } = c.req.param();
+    const databases = c.get("databases");
+    const user = c.get("user");
+
+    try {
+      // Get the project
+      const project = await databases.getDocument<Project>(
+        DATABASE_ID,
+        PROJECTS_ID,
+        projectId
+      );
+
+      // Check if the user is a member of the workspace
+      const member = await getMember({
+        databases,
+        workspaceId: project.workspaceId,
+        userId: user.$id,
+      });
+
+      if (!member) {
+        return c.json({ error: ERRORS.UNAUTHORIZED, status: 401 });
+      }
+
+      const now = new Date();
+      const thisMonthStart = startOfMonth(now);
+      const thisMonthEnd = endOfMonth(now);
+      const lastMonthStart = startOfMonth(subMonths(now, 1));
+      const lastMonthEnd = endOfMonth(subMonths(now, 1));
+
+      // Fetch tasks for this month and last month
+      const thisMonthTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("projectId", projectId),
+          Query.greaterThan("$createdAt", thisMonthStart.toISOString()),
+          Query.lessThan("$createdAt", thisMonthEnd.toISOString()),
+        ]
+      );
+
+      const lastMonthTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("projectId", projectId),
+          Query.greaterThan("$createdAt", lastMonthStart.toISOString()),
+          Query.lessThan("$createdAt", lastMonthEnd.toISOString()),
+        ]
+      );
+
+      // Calculate task counts and differences
+      const taskCount = thisMonthTasks.total;
+      const taskDifference = taskCount - lastMonthTasks.total;
+
+      // Fetch assigned tasks for this month and last month
+      const thisMonthAssignedTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("projectId", projectId),
+          Query.equal("assigneeId", member.$id),
+          Query.greaterThan("$createdAt", thisMonthStart.toISOString()),
+          Query.lessThan("$createdAt", thisMonthEnd.toISOString()),
+        ]
+      );
+
+      const lastMonthAssignedTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("projectId", projectId),
+          Query.equal("assigneeId", member.$id),
+          Query.greaterThan("$createdAt", lastMonthStart.toISOString()),
+          Query.lessThan("$createdAt", lastMonthEnd.toISOString()),
+        ]
+      );
+
+      // Calculate assigned task counts and differences
+      const assignedTaskCount = thisMonthAssignedTasks.total;
+      const assignedTaskDifference =
+        assignedTaskCount - lastMonthAssignedTasks.total;
+
+      // Fetch incomplete tasks for this month and last month
+      const thisMonthIncompleteTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("projectId", projectId),
+          Query.notEqual("status", TaskStatus.DONE),
+          Query.greaterThan("$createdAt", thisMonthStart.toISOString()),
+          Query.lessThan("$createdAt", thisMonthEnd.toISOString()),
+        ]
+      );
+
+      const lastMonthIncompleteTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("projectId", projectId),
+          Query.notEqual("status", TaskStatus.DONE),
+          Query.greaterThan("$createdAt", lastMonthStart.toISOString()),
+          Query.lessThan("$createdAt", lastMonthEnd.toISOString()),
+        ]
+      );
+
+      // Calculate incomplete task counts and differences
+      const incompleteTaskCount = thisMonthIncompleteTasks.total;
+      const incompleteTaskDifference =
+        incompleteTaskCount - lastMonthIncompleteTasks.total;
+
+      // Fetch completed tasks for this month and last month
+      const thisMonthCompletedTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("projectId", projectId),
+          Query.equal("status", TaskStatus.DONE),
+          Query.greaterThan("$createdAt", thisMonthStart.toISOString()),
+          Query.lessThan("$createdAt", thisMonthEnd.toISOString()),
+        ]
+      );
+
+      const lastMonthCompletedTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("projectId", projectId),
+          Query.equal("status", TaskStatus.DONE),
+          Query.greaterThan("$createdAt", lastMonthStart.toISOString()),
+          Query.lessThan("$createdAt", lastMonthEnd.toISOString()),
+        ]
+      );
+
+      // Calculate completed task counts and differences
+      const completedTaskCount = thisMonthCompletedTasks.total;
+      const completedTaskDifference =
+        completedTaskCount - lastMonthCompletedTasks.total;
+
+      // Fetch overdue tasks for this month and last month
+      const thisMonthOverdueTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("projectId", projectId),
+          Query.notEqual("status", TaskStatus.DONE),
+          Query.lessThan("dueDate", now.toISOString()),
+          Query.greaterThan("$createdAt", thisMonthStart.toISOString()),
+          Query.lessThan("$createdAt", thisMonthEnd.toISOString()),
+        ]
+      );
+
+      const lastMonthOverdueTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("projectId", projectId),
+          Query.notEqual("status", TaskStatus.DONE),
+          Query.lessThan("dueDate", now.toISOString()),
+          Query.greaterThan("$createdAt", lastMonthStart.toISOString()),
+          Query.lessThan("$createdAt", lastMonthEnd.toISOString()),
+        ]
+      );
+
+      // Calculate overdue task counts and differences
+      const overdueTaskCount = thisMonthOverdueTasks.total;
+      const overdueTaskDifference =
+        overdueTaskCount - lastMonthOverdueTasks.total;
+
+      // Return the project with standard response format
+      return c.json({
+        data: {
+          taskCount,
+          taskDifference,
+          assignedTaskCount,
+          assignedTaskDifference,
+          incompleteTaskCount,
+          incompleteTaskDifference,
+          completedTaskCount,
+          completedTaskDifference,
+          overdueTaskCount,
+          overdueTaskDifference,
+        },
+      });
+    } catch (error) {
+      console.error(`Error fetching analytics ${projectId}:`, error);
+      return c.json({ error: "Analytics not found", status: 404 });
     }
   });
 
