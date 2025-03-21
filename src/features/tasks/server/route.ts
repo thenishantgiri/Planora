@@ -52,26 +52,21 @@ const app = new Hono()
       ];
 
       if (projectId) {
-        console.log("projectId: ", projectId);
         query.push(Query.equal("projectId", projectId));
       }
       if (status) {
-        console.log("status: ", status);
         query.push(Query.equal("status", status));
       }
 
       if (assigneeId) {
-        console.log("assigneeId: ", assigneeId);
         query.push(Query.equal("assigneeId", assigneeId));
       }
 
       if (dueDate) {
-        console.log("dueDate: ", dueDate);
         query.push(Query.equal("dueDate", dueDate));
       }
 
       if (search) {
-        console.log("search: ", search);
         query.push(Query.search("name", search));
       }
 
@@ -102,7 +97,7 @@ const app = new Hono()
 
           return {
             ...member,
-            name: user.name,
+            name: user.name || user.email,
             email: user.email,
           };
         })
@@ -302,7 +297,7 @@ const app = new Hono()
 
     const assignee = {
       ...member,
-      name: user.name,
+      name: user.name || user.email,
       email: user.email,
     };
 

@@ -78,7 +78,7 @@ const app = new Hono<{
           // Create a properly typed populated member
           const populatedMember: PopulatedMember = {
             ...member, // This preserves userId, workspaceId, role
-            name: user.name,
+            name: user.name || user.email,
             email: user.email,
           };
           return populatedMember;
