@@ -13,6 +13,4 @@ export default async function Home() {
   } else {
     redirect(`/workspaces/${workspaces.documents[0].$id}`);
   }
-
-  return <div>Home Page</div>;
 }
