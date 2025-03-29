@@ -22,6 +22,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MemberRole } from "@/features/members/types";
+import { Badge } from "@/components/ui/badge";
+import { snakeCaseToTitleCase } from "@/lib/utils";
 
 export const MembersList = () => {
   const [ConfirmDialog, confirm] = useConfirm(
@@ -88,6 +90,9 @@ export const MembersList = () => {
                 />
                 <div className="flex flex-col">
                   <p className="text-sm font-medium">{member.name}</p>
+                  <Badge variant={MemberRole[member.role]}>
+                    {snakeCaseToTitleCase(member.role)}
+                  </Badge>
                   <p className="text-sm text-muted-foreground">
                     {member.email}
                   </p>

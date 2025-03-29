@@ -4,9 +4,10 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { TaskStatus } from "@/features/tasks/types";
 
 import { cn } from "@/lib/utils";
+import { MemberRole } from "@/features/members/types";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 w-fit",
   {
     variants: {
       variant: {
@@ -27,6 +28,10 @@ const badgeVariants = cva(
           "border-transparent bg-blue-200 text-blue-600 hover:bg-blue-200/90",
         [TaskStatus.DONE]:
           "border-transparent bg-emerald-200 text-emerald-600 hover:bg-emerald-200/90",
+        [MemberRole.ADMIN]:
+          "border-transparent bg-gray-800 text-white hover:bg-gray-700",
+        [MemberRole.MEMBER]:
+          "border-transparent bg-gray-300 text-gray-800 hover:bg-gray-400",
       },
     },
     defaultVariants: {
