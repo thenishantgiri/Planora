@@ -95,7 +95,15 @@ const app = new Hono()
           image
         );
 
-        const arrayBuffer = await storage.getFilePreview(
+        // Changed getFilePreview to getFileDownload to avoid triggering Appwrite image transformations,
+        // which are blocked on the current plan. This ensures we fetch the original image data.
+
+        // const arrayBuffer = await storage.getFilePreview(
+        //   IMAGES_BUCKET_ID,
+        //   file.$id
+        // );
+
+        const arrayBuffer = await storage.getFileDownload(
           IMAGES_BUCKET_ID,
           file.$id
         );
@@ -158,7 +166,15 @@ const app = new Hono()
           image
         );
 
-        const arrayBuffer = await storage.getFilePreview(
+        // Changed getFilePreview to getFileDownload to avoid triggering Appwrite image transformations,
+        // which are blocked on the current plan. This ensures we fetch the original image data.
+
+        // const arrayBuffer = await storage.getFilePreview(
+        //   IMAGES_BUCKET_ID,
+        //   file.$id
+        // );
+
+        const arrayBuffer = await storage.getFileDownload(
           IMAGES_BUCKET_ID,
           file.$id
         );
